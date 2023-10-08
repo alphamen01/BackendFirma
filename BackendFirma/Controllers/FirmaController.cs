@@ -2,6 +2,7 @@
 using BackendFirma.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 using System.Runtime.Intrinsics.X86;
 
 namespace BackendFirma.Controllers
@@ -345,5 +346,47 @@ namespace BackendFirma.Controllers
         //        return StatusCode(500, $"Error interno del servidor: {ex.Message}");
         //    }
         //}
+
+        [HttpGet("descargarCertificado/{id}")]
+        public async Task<IActionResult> DescargarCertificado(int id)
+        {
+            // Obtén el archivo por su ID desde tu servicio o fuente de datos.
+            var archivo = await firmaProvider.GetAsync(id);
+
+            if (archivo == null)
+            {
+                return NotFound(); // Devuelve una respuesta 404 si el archivo no se encuentra.
+            }
+
+            // Convierte el contenido del archivo en bytes
+            byte[] archivoBytes = Convert.FromBase64String(archivo.certificado_digital!); // Suponiendo que el contenido esté codificado en Base64.
+
+            // Configura el tipo de contenido de la respuesta
+            Response.Headers.Add("Content-Disposition", $"attachment; filename=\"{archivo.razon_social}.pdf\"");
+
+            return File(archivoBytes, MediaTypeNames.Application.Octet);
+        }
+
+        [HttpGet("descargarFirma/{id}")]
+        public async Task<IActionResult> DescargarFirma(int id)
+        {
+            // Obtén el archivo por su ID desde tu servicio o fuente de datos.
+            var archivo = await firmaProvider.GetAsync(id);
+
+            if (archivo == null)
+            {
+                return NotFound(); // Devuelve una respuesta 404 si el archivo no se encuentra.
+            }
+
+            // Convierte el contenido del archivo en bytes
+            byte[] archivoBytes = Convert.FromBase64String(archivo.ruta_rubrica!); // Suponiendo que el contenido esté codificado en Base64.
+
+            // Configura el tipo de contenido de la respuesta
+            Response.Headers.Add("Content-Disposition", $"attachment; filename=\"{archivo.razon_social}.jpg\"");
+
+            return File(archivoBytes, MediaTypeNames.Application.Octet);
+        }
+
+
     }
 }
